@@ -200,7 +200,7 @@ func (l *loopQuit) EventAction() {
 
 func (l *Loop) quitAfter() {
 	e := &loopQuit{l: l, verbose: false, duration: l.QuitAfterDuration}
-	f := l.getLoopEvent(e, nil, elog.PointerToFirstArg(&l))
+	f := l.getLoopEvent(e, nil)
 	l.signalEventAfter(f, l.QuitAfterDuration)
 }
 

@@ -252,7 +252,7 @@ func (e *activateEvent) String() string { return fmt.Sprintf("activate %s", e.n.
 func (n *Node) ActivateAfter(secs float64) {
 	if was := n.Activate(false); was {
 		n.e.activateEvent.n = n
-		le := n.l.getLoopEvent(&n.e.activateEvent, nil, elog.PointerToFirstArg(&n))
+		le := n.l.getLoopEvent(&n.e.activateEvent, nil)
 		n.l.signalEventAfter(le, secs)
 	}
 }

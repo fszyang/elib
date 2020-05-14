@@ -66,13 +66,12 @@ type eventNode struct {
 	hasHandler bool //true if already has an eventHandler
 }
 
-func (l *eventMain) getLoopEvent(a event.Actor, dst Noder, p elog.PointerToFirstArg) (e *nodeEvent) {
+func (l *eventMain) getLoopEvent(a event.Actor, dst Noder) (e *nodeEvent) {
 	e = l.nodeEventPool.Get().(*nodeEvent)
 	e.d = nil
 	e.actor = a
 	e.l = l.l
 	e.time = 0
-	e.caller = elog.GetCaller(p)
 	e.activate()
 	e.initCounters()
 	if dst != nil {
@@ -184,14 +183,14 @@ func (l *Loop) signalEvent(le *nodeEvent) {
 }
 
 // SignalEvent adds event whose action will be called on the next loop iteration.
-func (n *Node) SignalEventp(a event.Actor, dst Noder, p elog.PointerToFirstArg) {
-	e := n.l.getLoopEvent(a, dst, p)
+func (n *Node) SignalEventp(a event.Actor, dst Noder) {
+	e := n.l.getLoopEvent(a, dst)
 	n.l.signalEvent(e)
 }
 
 // SignalEvent adds event whose action will be called on the next loop iteration.
 func (n *Node) SignalEvent(e event.Actor, dst Noder) {
-	n.SignalEventp(e, dst, elog.PointerToFirstArg(&n))
+	n.SignalEventp(e, dst)
 }
 
 func (l *Loop) signalEventAfter(le *nodeEvent, secs float64) {
@@ -205,12 +204,12 @@ func (l *Loop) signalEventAfter(le *nodeEvent, secs float64) {
 	l.timedEventPool.Add(le)
 }
 
-func (n *Node) SignalEventAfterp(a event.Actor, dst Noder, dt float64, p elog.PointerToFirstArg) {
-	e := n.l.getLoopEvent(a, dst, p)
+func (n *Node) SignalEventAfterp(a event.Actor, dst Noder, dt float64) {
+	e := n.l.getLoopEvent(a, dst)
 	n.l.signalEventAfter(e, dt)
 }
 func (n *Node) SignalEventAfter(e event.Actor, dst Noder, secs float64) {
-	n.SignalEventAfterp(e, dst, secs, elog.PointerToFirstArg(&n))
+	n.SignalEventAfterp(e, dst, secs)
 }
 
 func (e *nodeEvent) logActor() {
@@ -841,13 +840,13 @@ func (e *quitEvent) String() string { return quitEventTypeStrings[e.Type] }
 func (e *quitEvent) Error() string  { return e.String() }
 func (e *quitEvent) EventAction()   {}
 func (l *Loop) Quit() {
-	e := l.getLoopEvent(ErrQuit, nil, elog.PointerToFirstArg(&l))
+	e := l.getLoopEvent(ErrQuit, nil)
 	l.signalEvent(e)
 }
 
 // Add an event to wakeup event sleep.
 func (l *Loop) Interrupt() {
-	e := l.getLoopEvent(ErrInterrupt, nil, elog.PointerToFirstArg(&l))
+	e := l.getLoopEvent(ErrInterrupt, nil)
 	l.signalEvent(e)
 }
 
