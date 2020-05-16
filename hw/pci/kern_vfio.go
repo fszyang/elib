@@ -170,7 +170,10 @@ func sysfsWrite(path, format string, args ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		fmt.Printf("sysfs close %v, args %v %v\n", fn, format, args)
+		f.Close()
+	}()
 	fmt.Fprintf(f, format, args...)
 	return err
 }
@@ -217,8 +220,10 @@ func (d *vfio_pci_device) new_group(group_number uint) (g *vfio_group, err error
 		return
 	}
 
+	fmt.Printf("open %v fd: %v\n", group_path, fd)
 	defer func() {
 		if err != nil && fd >= 0 {
+			fmt.Printf("close %v\n", group_path)
 			syscall.Close(fd)
 			g = nil
 		}
@@ -273,7 +278,6 @@ func (d *vfio_pci_device) Open() (err error) {
 			err = fmt.Errorf("pci %s: %s", d.Device.String(), err)
 		}
 	}()
-
 	err = d.new_id()
 	if err != nil {
 		return
@@ -437,10 +441,12 @@ func (m *vfio_main) close() (err error) {
 func (d *vfio_pci_device) Close() (err error) {
 	if d.interrupt_event_fd > 0 {
 		iomux.Del(d)
+		fmt.Printf("closing d.interrupt_event_fd %v\n", d.interrupt_event_fd)
 		syscall.Close(d.interrupt_event_fd)
 		d.interrupt_event_fd = -1
 	}
 	if d.device_fd > 0 {
+		fmt.Printf("closing d.device_fd %v\n", d.device_fd)
 		syscall.Close(d.device_fd)
 		d.device_fd = -1
 	}
